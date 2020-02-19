@@ -22,7 +22,7 @@
               >
                   <v-list-item three-line>
                     <v-list-item-content>
-                      <div class="overline mb-4">{{ cameras.title }}</div>
+                      <div class="overline mb-4">{{ cameras.headline }}</div>
                       <v-list-item-title class="headline mb-1">{{ cameras.title }}</v-list-item-title>
                       <v-list-item-subtitle>
                         <!-- TODO: move this logic to the methods section -->
@@ -38,8 +38,8 @@
                     </v-list-item-avatar>
                   </v-list-item>
                 <iframe v-if="cameras.video != ''" width="560" height="315" v-bind:src="cameras.video" frameborder="0"/>
-                <div>Logitude: {{cameras.longitude}}, Latitude: {{cameras.latitude}}</div>
-                <div>View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.latitude},${cameras.longitude}&query_place_id=${cameras.placeId}`" target="_blank">Google Maps</a></div>
+                <div class="pl-4 pa-2">Logitude: {{cameras.longitude}}, Latitude: {{cameras.latitude}}</div>
+                <div class="pl-4 pa-2">View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.latitude},${cameras.longitude}&query_place_id=${cameras.placeId}`" target="_blank">Google Maps</a></div>
               </v-card>
             </v-card>
           </v-expansion-panel-content>
@@ -58,6 +58,7 @@ export default {
       cameras: [
         {
           title: 'Fire Department North', 
+          headline: 'The north facing camera placed on the Woodland Hills Fire Department',
           cameraId: '12345', 
           latitude: 40.0116236, 
           longitude: -111.6503782, 
@@ -69,6 +70,7 @@ export default {
         },
         {
           title: 'Fire Department West', 
+          headline: 'The west facing camera placed on the Woodland Hills Fire Department',
           cameraId: '67890', 
           latitude: 40.0116236,
           longitude: -111.6503782, 
@@ -80,6 +82,7 @@ export default {
         },
         {
           title: 'Lauritzen Field East', 
+          headline: 'The east facing camera placed at the Lauritzen Field Park',
           cameraId: '13579', 
           latitude: 40.001940, 
           longitude: -111.657140, 
@@ -91,6 +94,7 @@ export default {
         },
         {
           title: 'Lauritzen Field West', 
+          headline: 'The west facing camera placed at the Lauritzen Field Park',
           cameraId: '24680', 
           latitude: 40.0088132,
           longitude: -111.6528565,
@@ -101,8 +105,9 @@ export default {
           avatar: 'https://m1.cbhomes.com/p/952/1639481/0073a14b0d694c5/pdl23tp.jpg'
         },
         {
-          title: 'Lauritzen Field West', 
-          cameraId: '24680', 
+          title: 'Woodland Hills LDS Church', 
+          headline: 'The east facing camera placed at the LDS Church in Woorland Hills',
+          cameraId: '124578', 
           latitude: 40.0285415,
           longitude: -111.6545793,
           placeId: 'ChIJlWeZCca6TYcRp-4qJp4INWo',
