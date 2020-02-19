@@ -2,8 +2,8 @@
   <div class="dashboard">
     <h1 large class="display-3 text-center pa-8" center>Woodland Hills</h1>
     <v-layout align-center justify-center row fill-height>
-      <v-expansion-panels accordion hover multiple style="maxWidth: 700px;">
-        <v-expansion-panel v-for="cameras in myCameras" :key="cameras.cameraId">
+      <v-expansion-panels accordion hover style="maxWidth: 800px;">
+        <v-expansion-panel v-for="cameras in myCameras" :key="cameras.cameraId" v-on:click="checkCameraStatus()">
           <v-expansion-panel-header disable-icon-rotate>
             <template v-slot:actions>
               <!-- TODO: Move this logic to a methods section in the <script> below -->
@@ -25,7 +25,6 @@
                       <div class="overline mb-4">{{ cameras.headline }}</div>
                       <v-list-item-title class="headline mb-1">{{ cameras.title }}</v-list-item-title>
                       <v-list-item-subtitle>
-                        <!-- TODO: move this logic to the methods section -->
                         <v-alert text v-bind:type="cameras.type">The camera status is {{cameras.status}}</v-alert>
                       </v-list-item-subtitle>
                     </v-list-item-content>
@@ -37,9 +36,11 @@
                       <v-img :src="cameras.avatar"></v-img>
                     </v-list-item-avatar>
                   </v-list-item>
-                <iframe v-if="cameras.video != ''" width="560" height="315" v-bind:src="cameras.video" frameborder="0"/>
-                <div class="pl-4 pa-2">Logitude: {{cameras.longitude}}, Latitude: {{cameras.latitude}}</div>
-                <div class="pl-4 pa-2">View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.latitude},${cameras.longitude}&query_place_id=${cameras.placeId}`" target="_blank">Google Maps</a></div>
+                <iframe v-if="cameras.video" width="560" height="315" v-bind:src="cameras.video" frameborder="0"/>
+                <div>
+                  <div class="pl-4 pa-1">Logitude: {{cameras.longitude}}, Latitude: {{cameras.latitude}}</div>
+                  <div class="pl-4 pa-1 pb-2">View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.latitude},${cameras.longitude}&query_place_id=${cameras.placeId}`" target="_blank">Google Maps</a></div>
+                </div>  
               </v-card>
             </v-card>
           </v-expansion-panel-content>
@@ -64,7 +65,7 @@ export default {
           longitude: -111.6503782, 
           placeId: 'ChIJRa6brry6TYcRZ4_9eCvq10g',
           status: 'good', 
-          type: 'success',
+          type: '',
           video: 'https://rtsp.me/embed/HySsFh8T/',
           avatar: 'https://utahvalley360.com/wp-content/uploads/2017/11/Mountains.jpg'
         },
@@ -76,7 +77,7 @@ export default {
           longitude: -111.6503782, 
           placeId: 'ChIJRa6brry6TYcRZ4_9eCvq10g',
           status: 'good', 
-          type: 'success',
+          type: '',
           video: 'https://rtsp.me/embed/HySsFh8T/',
           avatar: 'https://m1.cbhomes.com/p/952/1639481/0073a14b0d694c5/pdl23tp.jpg'
         },
@@ -88,8 +89,8 @@ export default {
           longitude: -111.657140, 
           placeId: 'ChIJrxJwKai6TYcRNWd4dveSzmY',
           status: 'warning', 
-          type: 'warning',
-          video: '',
+          type: null,
+          video: null,
           avatar: 'https://utahvalley360.com/wp-content/uploads/2017/11/lauritzen-field.jpg'
         },
         {
@@ -100,8 +101,8 @@ export default {
           longitude: -111.6528565,
           placeId: 'ChIJrxJwKai6TYcRNWd4dveSzmY',
           status: 'error', 
-          type: 'error',
-          video: '',
+          type: null,
+          video: null,
           avatar: 'https://m1.cbhomes.com/p/952/1639481/0073a14b0d694c5/pdl23tp.jpg'
         },
         {
@@ -112,11 +113,32 @@ export default {
           longitude: -111.6545793,
           placeId: 'ChIJlWeZCca6TYcRp-4qJp4INWo',
           status: 'unknown', 
-          type: 'info',
-          video: '',
+          type: null,
+          video: null,
           avatar: 'https://lh5.googleusercontent.com/p/AF1QipOFAczQHpvUfyDFXgvc8G6K2_B3neuneC-Aineg=w408-h544-k-no'
         },
       ]
+    }
+  },
+  methods: {
+    //Set the camera type based on the status of the cameras. This 'type' is used for coloring 
+    checkCameraStatus: function(){
+      this.cameras.forEach(cam => {
+        switch(cam.status){
+          case 'good':
+            cam.type = 'success'
+            break;
+          case 'warning':
+            cam.type = 'warning'
+            break;
+          case 'error':
+            cam.type = 'error'
+            break;
+          default:
+            cam.type = 'info'
+            break;
+        }
+      });
     }
   },
   // watch: {
