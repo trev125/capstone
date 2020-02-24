@@ -52,6 +52,7 @@
 
 <script>
 // @ is an alias to /src
+//import {HTTP} from '@/api/http-common';
 
 export default {
   data() {
