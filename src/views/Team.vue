@@ -1,51 +1,101 @@
 <template>
   <div class="team">
-    <h1 large class="display-3 text-center pa-8" center>Team</h1>
-    <ul v-if="cameras">
-        <li v-for="camera in cameras" :key="camera.id">
-            <p><strong>{{camera.id}}</strong></p>
-            <p>{{camera.name}}</p>
-            <p>{{camera.coordinates}}</p>
-            <p>{{camera.status}}</p>
-            <p>{{camera.alerts}}</p>
-            <p>{{camera.alerts.length}}</p>
-            <div v-if="camera.alerts.length > 0">
-                <p>{{camera.alerts.status}}</p>
-                <p>{{camera.alerts.alertType}}</p>
-                <p>{{camera.alerts.message}}</p>
-                <p>{{camera.alerts.timeStamp}}</p>
-            </div>
-            <p>{{camera.streams.url}}</p>
-        </li>
-    </ul>
-    <ul v-if="users">
-        <li v-for="user in users" :key="user.id">
-            <p><strong>{{user.id}}</strong></p>
-            <p>{{user.name}}</p>
-        </li>
-  </ul>
+    <h1 large class="display-3 text-center pa-8" center>Group</h1>
+    <div v-if="groups">
+      <v-layout align-center justify-center row fill-height>
+      <v-expansion-panels accordion hover multiple style="maxWidth: 800px;">
+        <v-expansion-panel v-for="user in groups" :key="user.id">
+          <v-expansion-panel-header disable-icon-rotate>
+            <template v-slot:actions>
+              <v-icon color="#2196F3">account_circle</v-icon>
+            </template>
+            {{user.firstName}} {{user.lastName}}
+          </v-expansion-panel-header>
+          <v-expansion-panel-content class="grey--text">
+            <v-card>
+              <v-card
+                class="mx-auto"
+                outlined
+              >
+                <v-list-item three-line>
+                  <v-list-item-content>
+                    <v-list-item-title>Email: </v-list-item-title>
+                    <v-text-field
+                      v-model="user.email"
+                      placeholder= user.email
+                    ></v-text-field>
+                    <div class="my-2">
+                      <v-btn small color="primary" v-on:click="saveChanges()">Save</v-btn>
+                    </div>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-card>
+            </v-card>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
+    </v-layout>
+    </div>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import {HTTP} from '@/api/http-common';
+//import {HTTP} from '@/api/http-common';
 
 export default {
-    data() {
+  data() {
     return {
-        cameras: {},
-        users: {},
-        camErrors: [],
-        userErrors: [],
-        sampleUser: [
+      cameras: [],
+      users: [],
+      camErrors: [],
+      userErrors: [],
+      groups: [
+        {
+          "id": 0,
+          "firstName": "Trevor",
+          "lastName": "Allen",
+          "email": "trevor@woodlandhills.com",
+          "groups": [
             {
-                id: '1234'
+              "id": 0,
+              "name": "Woodland Hills"
             }
-        ]
+          ]
+        },
+        {
+          "id": 1,
+          "firstName": "Miranda",
+          "lastName": "Taylor",
+          "email": "miranda@woodlandhills.com",
+          "groups": [
+            {
+              "id": 0,
+              "name": "Woodland Hills"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "firstName": "Kyle",
+          "lastName": "Neal",
+          "email": "kyle@woodlandhills.com",
+          "groups": [
+            {
+              "id": 0,
+              "name": "Woodland Hills"
+            }
+          ]
+        }
+      ],
+      sampleUser: [
+        {
+          id: 1234
+        }
+      ]
     }
   },
-    created() {
+  created() {
         // HTTP.get(`user/${this.sampleUser.id}`)
         // .then(response => {
         //     this.users = response.data
@@ -54,24 +104,31 @@ export default {
         // .catch(e => {
         //     this.errors.push(e)
         // })
-        HTTP.get(`camera/list/${this.sampleUser.id}`)
-        .then(response => {
-            this.cameras = response.data
-            console.log(JSON.stringify(this.cameras))
-        })
-        .catch(e => {
-            this.camErrors.push(e)
-        })
+        // HTTP.get(`camera/list/1234`)
+        // .then(response => {
+        //     this.cameras = response.data
+        //     console.log(JSON.stringify(this.cameras))
+        // })
+        // .catch(e => {
+        //     this.camErrors.push(e)
+        // })
 
-        HTTP.get(`user/admin/list/${this.sampleUser.id}`)
-        .then(response => {
-            console.log(response.data)
-            this.users = response.data
-            console.log(JSON.stringify(this.users))
-        })
-        .catch(e => {
-            this.userErrors.push(e)
-        })
+    // HTTP.get(`user/admin/list/0`)
+    // .then(response => {
+    //     console.log(response.data)
+    //     this.groups = response.data
+    //     console.log(JSON.stringify(this.groups))
+    // })
+    // .catch(e => {
+    //     this.userErrors.push(e)
+    // })
+  },
+  methods: {
+  //Set the camera type based on the status of the cameras. This 'type' is used for coloring 
+    saveChanges: function(newEmail){
+      newEmail = 'wow'
+      console.log('save the email to be', newEmail)
     }
+  }
 }
 </script>
