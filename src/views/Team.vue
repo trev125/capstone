@@ -34,7 +34,17 @@
               >
                 Save
               </v-btn>
-              
+              <v-btn
+                class="mr-4"
+                color="red"
+                small
+                dark
+                absolute
+                right
+                @click="resetPassword"
+              >
+                Reset Password
+              </v-btn>
             </v-form>
             <!-- <v-card
               class="mx-auto"
@@ -163,6 +173,9 @@ export default {
       //   console.log('this.refs: ',this.$refs.test)
       // });
       // console.log('save the email to be', test)
+    },
+    resetPassword: function(){
+      console.log('reset the password yo')
     }
   }
 }

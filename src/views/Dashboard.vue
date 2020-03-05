@@ -310,7 +310,7 @@ export default {
       });
     },
     dismissAlert (id) {
-      console.log('Alert to dismiss: ',id)
+      console.log('Alert to dismiss: ', id)
     }
   },
   // watch: {
