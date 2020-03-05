@@ -11,7 +11,7 @@
                 <span>Marketing Site</span>
                 <v-icon right>link</v-icon>
             </v-btn>
-            <v-btn text color="white">
+            <v-btn href="/" text color="white">
                 <span>Sign Out</span>
                 <v-icon right>exit_to_app</v-icon>
             </v-btn>
@@ -37,9 +37,10 @@ export default {
         return {
             drawer: false,
             links: [
-                { icon: 'mdi-view-dashboard', text: 'Dashboard', route: '/' },
+                { icon: 'mdi-view-dashboard', text: 'Dashboard', route: '/dashboard' },
                 { icon: 'mdi-folder', text: 'My Projects', route: '/projects' },
                 { icon: 'supervisor_account', text: 'Group', route: '/team' },
+                { icon: 'supervisor_account', text: 'Login', route: '/' },
             ]
         }
     }

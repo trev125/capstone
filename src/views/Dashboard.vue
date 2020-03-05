@@ -29,12 +29,12 @@
                       </v-list-item-subtitle>
                     </v-list-item-content>
 
-                    <v-list-item-avatar
+                    <!-- <v-list-item-avatar
                       tile
                       size="80"
                     >
                       <v-img :src="cameras.avatar"></v-img>
-                    </v-list-item-avatar>
+                    </v-list-item-avatar> -->
                   </v-list-item>
                 <iframe v-if="cameras.video" width="560" height="315" v-bind:src="cameras.video" frameborder="0"/>
                 <div>

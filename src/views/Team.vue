@@ -12,25 +12,48 @@
             {{user.firstName}} {{user.lastName}}
           </v-expansion-panel-header>
           <v-expansion-panel-content class="grey--text">
-            <v-card>
-              <v-card
-                class="mx-auto"
-                outlined
+            <v-form
+              ref="form"
+              v-model="valid"
+              lazy-validation
+              @submit.prevent="saveChanges"
+            >
+              <v-text-field
+                v-model="user.email"
+                :rules="emailRules"
+                label="Email"
+                required
+                :id="`${user.id}-email`"
+              ></v-text-field>
+              <v-btn
+                type="submit"
+                :disabled="!valid"
+                class="mr-4"
+                color="primary"
+                small
               >
-                <v-list-item three-line>
-                  <v-list-item-content>
-                    <v-list-item-title>Email: </v-list-item-title>
-                    <v-text-field
-                      v-model="user.email"
-                      placeholder= user.email
-                    ></v-text-field>
-                    <div class="my-2">
-                      <v-btn small color="primary" v-on:click="saveChanges()">Save</v-btn>
-                    </div>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-card>
-            </v-card>
+                Save
+              </v-btn>
+              
+            </v-form>
+            <!-- <v-card
+              class="mx-auto"
+              outlined
+            >
+              <v-list-item three-line>
+                <v-list-item-content>
+                  <v-list-item-title>Email: </v-list-item-title>
+                  <v-text-field
+                    v-model="user.email"
+                    placeholder= user.email
+                    id="emailField"
+                  ></v-text-field>
+                  <div class="my-2">
+                    <v-btn small color="primary" v-on:click="saveChanges($id.emailField)">Save</v-btn>
+                  </div>
+                </v-list-item-content>
+              </v-list-item>
+            </v-card> -->
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -46,6 +69,11 @@
 export default {
   data() {
     return {
+      valid: true,
+      emailRules: [
+        v => !!v || 'E-mail is required',
+        v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+      ],
       cameras: [],
       users: [],
       camErrors: [],
@@ -123,11 +151,18 @@ export default {
     //     this.userErrors.push(e)
     // })
   },
+  mounted() {},
   methods: {
   //Set the camera type based on the status of the cameras. This 'type' is used for coloring 
-    saveChanges: function(newEmail){
-      newEmail = 'wow'
-      console.log('save the email to be', newEmail)
+    saveChanges: function(formObj){
+      let value = formObj.target.elements[0]._value
+      console.log('save the email to be', value)
+      // let id = '' + userId
+      // let test = id + '-email'
+      // this.$nextTick(() => {
+      //   console.log('this.refs: ',this.$refs.test)
+      // });
+      // console.log('save the email to be', test)
     }
   }
 }
