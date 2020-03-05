@@ -3,46 +3,57 @@
     <h1 large class="display-3 text-center pa-8" center>Woodland Hills</h1>
     <v-layout align-center justify-center row fill-height>
       <v-expansion-panels accordion hover style="maxWidth: 800px;">
-        <v-expansion-panel v-for="cameras in myCameras" :key="cameras.cameraId" v-on:click="checkCameraStatus()">
+        <v-expansion-panel v-for="cameras in myCameras" :key="cameras.id">
           <v-expansion-panel-header disable-icon-rotate>
             <template v-slot:actions>
-              <!-- TODO: Move this logic to a methods section in the <script> below -->
               <v-icon v-if="cameras.status === 'good'" color="teal">check_circle</v-icon>
-              <v-icon v-else-if="cameras.status === 'warning'" color="warning">warning</v-icon>
-              <v-icon v-else-if="cameras.status === 'error'" color="error">error</v-icon>
+              <v-icon v-else-if="cameras.status === 'offline'" color="warning">warning</v-icon>
+              <v-icon v-else-if="cameras.status === 'alert'" color="error">error</v-icon>
               <v-icon v-else color="#2196F3">info</v-icon>
             </template>
-            {{cameras.title}}
+            {{cameras.name}}
           </v-expansion-panel-header>
           <v-expansion-panel-content class="grey--text">
-            <v-card>
+            <!-- <v-card> -->
               <v-card
                 class="mx-auto"
                 outlined
               >
-                  <v-list-item three-line>
-                    <v-list-item-content>
-                      <div class="overline mb-4">{{ cameras.headline }}</div>
-                      <v-list-item-title class="headline mb-1">{{ cameras.title }}</v-list-item-title>
-                      <v-list-item-subtitle>
-                        <v-alert text v-bind:type="cameras.type">The camera status is {{cameras.status}}</v-alert>
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-
-                    <!-- <v-list-item-avatar
-                      tile
-                      size="80"
-                    >
-                      <v-img :src="cameras.avatar"></v-img>
-                    </v-list-item-avatar> -->
-                  </v-list-item>
-                <iframe v-if="cameras.video" width="560" height="315" v-bind:src="cameras.video" frameborder="0"/>
-                <div>
-                  <div class="pl-4 pa-1">Logitude: {{cameras.longitude}}, Latitude: {{cameras.latitude}}</div>
-                  <div class="pl-4 pa-1 pb-2">View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.latitude},${cameras.longitude}&query_place_id=${cameras.placeId}`" target="_blank">Google Maps</a></div>
-                </div>  
+                <v-list-item three-line>
+                  <v-list-item-content>
+                    <div class="overline mb-4">{{ cameras.name }}, {{cameras.ipAddress}}, {{cameras.streams[0].streamType}} stream</div>
+                    <v-list-item-title class="headline mb-1">{{ cameras.name }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-alert v-if="cameras.status === 'good'" text color="teal">The camera status is {{cameras.status}}</v-alert>
+                      <v-alert v-else-if="cameras.status === 'offline'" text color="warning">The camera status is {{cameras.status}}</v-alert>
+                      <v-alert v-else-if="cameras.status === 'alert'" text color="error">The camera status is {{cameras.status}}</v-alert>
+                      <v-alert v-else text color="#2196F3">The camera status is unknown</v-alert>
+                    </v-list-item-subtitle>
+                    <span class="pl-4 pa-1 pb-2">View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.coordinates}`" target="_blank">Google Maps</a></span>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item three-line v-if="cameras.streams.length > 3">
+                  <v-list-item-content>
+                    <v-list-item-title class="headline mb-1">Streams</v-list-item-title>
+                    <v-list-item-subtitle v-for="streams in cameras.streams" :key="streams.id">
+                      <iframe v-if="streams.streamType === 'HD'" width="560" height="315" v-bind:src="streams.url" frameborder="0"/>
+                      <iframe v-if="streams.streamType === 'Thermal'" width="560" height="315" v-bind:src="streams.url" frameborder="0"/>
+                    </v-list-item-subtitle>
+                  </v-list-item-content> 
+                </v-list-item>
+                <v-list-item three-line>
+                  <v-list-item-content>
+                    <v-list-item-title class="headline mb-1">Alert Histroy</v-list-item-title>
+                    <v-list-item-subtitle v-for="alerts in cameras.alerts" :key="alerts.id">
+                      <v-alert v-if="alerts.alertType === 'High Temperature'" text color="yellow darken-3" dismissible @input="dismissAlert(alerts.id)">A {{alerts.alertType}} has been detected</v-alert>
+                      <v-alert v-else-if="alerts.alertType === 'Rapid rise in temperature'" text color="orange darken-3" dismissible @input="dismissAlert(alerts.id)">A {{alerts.alertType}} has been detected</v-alert>
+                      <v-alert v-else-if="alerts.alertType === 'Danger'" text color="red darken-2" dismissible @input="dismissAlert(alerts.id)">A {{alerts.alertType}} has been detected</v-alert>
+                      <v-alert v-else text color="#2196F3">A {{alerts.alertType}} has been detected</v-alert>
+                    </v-list-item-subtitle>
+                  </v-list-item-content> 
+                </v-list-item>
               </v-card>
-            </v-card>
+            <!-- </v-card> -->
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -59,64 +70,221 @@ export default {
     return{
       cameras: [
         {
-          title: 'Fire Department North', 
-          headline: 'The north facing camera placed on the Woodland Hills Fire Department',
-          cameraId: '12345', 
-          latitude: 40.0116236, 
-          longitude: -111.6503782, 
-          placeId: 'ChIJRa6brry6TYcRZ4_9eCvq10g',
-          status: 'good', 
-          type: '',
-          video: 'https://rtsp.me/embed/HySsFh8T/',
-          avatar: 'https://utahvalley360.com/wp-content/uploads/2017/11/Mountains.jpg'
+          id: 0,
+          name: "Fire Department North",
+          groupId: 0,
+          coordinates: "40.0116236, -111.6503782",
+          ipAddress: "198.51.100.42",
+          status: "good",
+          alerts: [
+            {
+              "id": 0,
+              "cameraId": 0,
+              "status": "active",
+              "alertType": "High Temperature",
+              "message": "High Temp Message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/hightemp"
+            },
+            {
+              "id": 1,
+              "cameraId": 0,
+              "status": "dismissed",
+              "alertType": "Rapid rise in temperature",
+              "message": "Rapid rise in Temp message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/rapidrise"
+            },
+            {
+              "id": 2,
+              "cameraId": 0,
+              "status": "dismissed",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            },
+            {
+              "id": 3,
+              "cameraId": 0,
+              "status": "deleted",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            }
+          ],
+          streams: [
+            {
+              id: 0,
+              url: "https://rtsp.me/embed/HySsFh8T/",
+              streamType: "HD"
+            },
+            {
+              id: 1,
+              url: "Thermal Stream",
+              streamType: "Thermal"
+            }
+          ]
         },
         {
-          title: 'Fire Department West', 
-          headline: 'The west facing camera placed on the Woodland Hills Fire Department',
-          cameraId: '67890', 
-          latitude: 40.0116236,
-          longitude: -111.6503782, 
-          placeId: 'ChIJRa6brry6TYcRZ4_9eCvq10g',
-          status: 'good', 
-          type: '',
-          video: 'https://rtsp.me/embed/HySsFh8T/',
-          avatar: 'https://m1.cbhomes.com/p/952/1639481/0073a14b0d694c5/pdl23tp.jpg'
+          id: 1,
+          name: "Fire Department West",
+          groupId: 0,
+          coordinates: "40.0116236, -111.6503782",
+          ipAddress: "198.51.100.43",
+          status: "alert",
+          alerts: [
+            {
+              "id": 4,
+              "cameraId": 1,
+              "status": "active",
+              "alertType": "High Temperature",
+              "message": "High Temp Message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/hightemp"
+            },
+            {
+              "id": 5,
+              "cameraId": 1,
+              "status": "dismissed",
+              "alertType": "Rapid rise in temperature",
+              "message": "Rapid rise in Temp message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/rapidrise"
+            },
+            {
+              "id": 6,
+              "cameraId": 1,
+              "status": "dismissed",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            },
+            {
+              "id": 7,
+              "cameraId": 1,
+              "status": "deleted",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            }
+          ],
+          streams: [
+            {
+              id: 1,
+              url: "testurl",
+              streamType: "Thermal"
+            }
+          ]
         },
         {
-          title: 'Lauritzen Field East', 
-          headline: 'The east facing camera placed at the Lauritzen Field Park',
-          cameraId: '13579', 
-          latitude: 40.001940, 
-          longitude: -111.657140, 
-          placeId: 'ChIJrxJwKai6TYcRNWd4dveSzmY',
-          status: 'warning', 
-          type: null,
-          video: null,
-          avatar: 'https://utahvalley360.com/wp-content/uploads/2017/11/lauritzen-field.jpg'
+          id: 2,
+          name: "Fire Department East",
+          groupId: 0,
+          coordinates: "40.0116236, -111.6503782",
+          ipAddress: "198.51.100.44",
+          status: "offline",
+          alerts: [
+            {
+              "id": 8,
+              "cameraId": 2,
+              "status": "active",
+              "alertType": "High Temperature",
+              "message": "High Temp Message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/hightemp"
+            },
+            {
+              "id": 9,
+              "cameraId": 2,
+              "status": "dismissed",
+              "alertType": "Rapid rise in temperature",
+              "message": "Rapid rise in Temp message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/rapidrise"
+            },
+            {
+              "id": 10,
+              "cameraId": 2,
+              "status": "dismissed",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            },
+            {
+              "id": 11,
+              "cameraId": 2,
+              "status": "deleted",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            }
+          ],
+          streams: [
+            {
+              id: 2,
+              url: "https://rtsp.me/embed/HySsFh8T/",
+              streamType: "HD"
+            }
+          ]
         },
         {
-          title: 'Lauritzen Field West', 
-          headline: 'The west facing camera placed at the Lauritzen Field Park',
-          cameraId: '24680', 
-          latitude: 40.0088132,
-          longitude: -111.6528565,
-          placeId: 'ChIJrxJwKai6TYcRNWd4dveSzmY',
-          status: 'error', 
-          type: null,
-          video: null,
-          avatar: 'https://m1.cbhomes.com/p/952/1639481/0073a14b0d694c5/pdl23tp.jpg'
-        },
-        {
-          title: 'Woodland Hills LDS Church', 
-          headline: 'The east facing camera placed at the LDS Church in Woorland Hills',
-          cameraId: '124578', 
-          latitude: 40.0285415,
-          longitude: -111.6545793,
-          placeId: 'ChIJlWeZCca6TYcRp-4qJp4INWo',
-          status: 'unknown', 
-          type: null,
-          video: null,
-          avatar: 'https://lh5.googleusercontent.com/p/AF1QipOFAczQHpvUfyDFXgvc8G6K2_B3neuneC-Aineg=w408-h544-k-no'
+          id: 3,
+          name: "Fire Department South",
+          groupId: 0,
+          coordinates: "40.0116236, -111.6503782",
+          ipAddress: "198.51.100.45",
+          status: "",
+          alerts: [
+            {
+              "id": 12,
+              "cameraId": 3,
+              "status": "active",
+              "alertType": "High Temperature",
+              "message": "High Temp Message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/hightemp"
+            },
+            {
+              "id": 13,
+              "cameraId": 3,
+              "status": "dismissed",
+              "alertType": "Rapid rise in temperature",
+              "message": "Rapid rise in Temp message",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/rapidrise"
+            },
+            {
+              "id": 14,
+              "cameraId": 3,
+              "status": "dismissed",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            },
+            {
+              "id": 15,
+              "cameraId": 3,
+              "status": "deleted",
+              "alertType": "Danger",
+              "message": "DANGER DANGER",
+              "timeStamp": "2020-03-05T15:58:04.186Z",
+              "filePath": "/camera/id/alert/danger"
+            }
+          ],
+          streams: [
+            {
+              id: 3,
+              url: "https://rtsp.me/embed/HySsFh8T/",
+              streamType: "HD"
+            }
+          ]
         },
       ]
     }
@@ -129,10 +297,10 @@ export default {
           case 'good':
             cam.type = 'success'
             break;
-          case 'warning':
+          case 'offline':
             cam.type = 'warning'
             break;
-          case 'error':
+          case 'alert':
             cam.type = 'error'
             break;
           default:
@@ -140,6 +308,9 @@ export default {
             break;
         }
       });
+    },
+    dismissAlert (id) {
+      console.log('Alert to dismiss: ',id)
     }
   },
   // watch: {
