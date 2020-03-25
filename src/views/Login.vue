@@ -29,7 +29,7 @@
                           required
                         ></v-text-field>
                         <v-layout justify-space-between>
-                            <v-btn type="submit" @click.stop.prevent="submit()" :class=" { 'blue darken-4 white--text' : valid, disabled: !valid }">Login</v-btn>
+                            <v-btn type="submit" @click.stop.prevent="submit()" :disabled="!valid" :class=" { 'blue darken-4 white--text' : valid, disabled: !valid }">Login</v-btn>
                         </v-layout>
                       </v-form>
                   </div>
@@ -40,16 +40,32 @@
        </v-container>
      </main>
    </v-app>
+  <v-snackbar
+    v-model="invalidAuth"
+    top
+    :timeout="3000"
+  >
+    Invalid username/password
+    <v-btn
+      color="pink"
+      text
+      @click="invalidAuth = false"
+    >
+      Close
+    </v-btn>
+  </v-snackbar>
  </div>
- </template>
+</template>
 
- <script src="https://unpkg.com/vue/dist/vue.js"></script>
- <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
- <script>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
+<script>
 export default{
         data () {
           return {
             valid: false,
+            invalidAuth: false,
+            welcome: false,
             e1: false,
             password: '',
             passwordRules: [
@@ -69,12 +85,12 @@ export default{
               let pass = this.$refs.form.$el[1]._value
               console.log('Email to be saved: ', email)
               console.log('Password to be saved: ',pass)
-              if (email === 'test@me.com' && pass === 'password'){
-                this.$router.push("/dashboard");
+              if (email === 'H' && pass === 'password'){
+                this.$router.push("/dashboard")
               }
               else {
-                alert("invalid username or password")
-                this.$refs.form.reset()
+                this.invalidAuth = true
+                //this.$refs.form.reset()
               }
             }
             // else {
@@ -87,4 +103,4 @@ export default{
         },
     }
 
- </script>
+</script>

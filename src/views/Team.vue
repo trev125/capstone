@@ -41,7 +41,7 @@
                 dark
                 absolute
                 right
-                @click="resetPassword"
+                @click="resetPassword(user.id), resetPass = true, resetPassUser = user.firstName + ' ' + user.lastName"
               >
                 Reset Password
               </v-btn>
@@ -69,6 +69,20 @@
       </v-expansion-panels>
     </v-layout>
     </div>
+    <v-snackbar
+      v-model="resetPass"
+      top
+      :timeout="3000"
+    >
+      Password has been reset for {{resetPassUser}}
+      <v-btn
+        color="red"
+        text
+        @click="resetPass = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
 
@@ -80,6 +94,8 @@ export default {
   data() {
     return {
       valid: true,
+      resetPass: false,
+      resetPassUser: '',
       emailRules: [
         v => !!v || 'E-mail is required',
         v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
@@ -90,38 +106,38 @@ export default {
       userErrors: [],
       groups: [
         {
-          "id": 0,
-          "firstName": "Trevor",
-          "lastName": "Allen",
-          "email": "trevor@woodlandhills.com",
-          "groups": [
+          id: 0,
+          firstName: "Trevor",
+          lastName: "Allen",
+          email: "trevor@woodlandhills.com",
+          groups: [
             {
-              "id": 0,
-              "name": "Woodland Hills"
+              id: 0,
+              name: "Woodland Hills"
             }
           ]
         },
         {
-          "id": 1,
-          "firstName": "Miranda",
-          "lastName": "Taylor",
-          "email": "miranda@woodlandhills.com",
-          "groups": [
+          id: 1,
+          firstName: "Miranda",
+          lastName: "Taylor",
+          email: "miranda@woodlandhills.com",
+          groups: [
             {
-              "id": 0,
-              "name": "Woodland Hills"
+              id: 0,
+              name: "Woodland Hills"
             }
           ]
         },
         {
-          "id": 2,
-          "firstName": "Kyle",
-          "lastName": "Neal",
-          "email": "kyle@woodlandhills.com",
-          "groups": [
+          id: 2,
+          firstName: "Kyle",
+          lastName: "Neal",
+          email: "kyle@woodlandhills.com",
+          groups: [
             {
-              "id": 0,
-              "name": "Woodland Hills"
+              id: 0,
+              name: "Woodland Hills"
             }
           ]
         }
@@ -174,8 +190,8 @@ export default {
       // });
       // console.log('save the email to be', test)
     },
-    resetPassword: function(){
-      console.log('reset the password yo')
+    resetPassword: function(id){
+      console.log('reset the password for ', id)
     }
   }
 }

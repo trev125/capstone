@@ -14,7 +14,7 @@
             {{cameras.name}}
           </v-expansion-panel-header>
           <v-expansion-panel-content class="grey--text">
-            <!-- <v-card> -->
+            <!-- <v-card>  v-if="cameras.streams.length > 3" -->
               <v-card
                 class="mx-auto"
                 outlined
@@ -32,7 +32,7 @@
                     <span class="pl-4 pa-1 pb-2">View on <a :href="`https://www.google.com/maps/search/?api=1&query=${cameras.coordinates}`" target="_blank">Google Maps</a></span>
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item three-line v-if="cameras.streams.length > 3">
+                <v-list-item three-line >
                   <v-list-item-content>
                     <v-list-item-title class="headline mb-1">Streams</v-list-item-title>
                     <v-list-item-subtitle v-for="streams in cameras.streams" :key="streams.id">
@@ -43,12 +43,37 @@
                 </v-list-item>
                 <v-list-item three-line>
                   <v-list-item-content>
-                    <v-list-item-title class="headline mb-1">Alert Histroy</v-list-item-title>
+                    <v-list-item-title class="headline mb-1" v-if="cameras.alerts.length !== selected.length">Alert Histroy ({{cameras.alerts.length - selected.length}})</v-list-item-title>
+                    <v-list-item-title v-else class="headline mb-1">No Recent Alerts</v-list-item-title>
                     <v-list-item-subtitle v-for="alerts in cameras.alerts" :key="alerts.id">
-                      <v-alert v-if="alerts.alertType === 'High Temperature'" text color="yellow darken-3" dismissible @input="dismissAlert(alerts.id)">A {{alerts.alertType}} has been detected</v-alert>
-                      <v-alert v-else-if="alerts.alertType === 'Rapid rise in temperature'" text color="orange darken-3" dismissible @input="dismissAlert(alerts.id)">A {{alerts.alertType}} has been detected</v-alert>
-                      <v-alert v-else-if="alerts.alertType === 'Danger'" text color="red darken-2" dismissible @input="dismissAlert(alerts.id)">A {{alerts.alertType}} has been detected</v-alert>
-                      <v-alert v-else text color="#2196F3">A {{alerts.alertType}} has been detected</v-alert>
+                      <v-alert v-if="alerts.alertType === 'High Temperature'" 
+                        text color="yellow darken-3" 
+                        dismissible 
+                        @input="dismissAlert(alerts.id), getAlertCount(alerts.id), dismissedAlert = true, dismissedAlertId = alerts.id"
+                      >
+                        A {{alerts.alertType}} has been detected
+                      </v-alert>
+                      <v-alert v-else-if="alerts.alertType === 'Rapid rise in temperature'" 
+                        text color="orange darken-3" 
+                        dismissible 
+                        @input="dismissAlert(alerts.id), getAlertCount(alerts.id), dismissedAlert = true, dismissedAlertId = alerts.id"
+                      >
+                        A {{alerts.alertType}} has been detected
+                      </v-alert>
+                      <v-alert v-else-if="alerts.alertType === 'Danger'" 
+                        text color="red darken-2" 
+                        dismissible 
+                        @input="dismissAlert(alerts.id), getAlertCount(alerts.id), dismissedAlert = true, dismissedAlertId = alerts.id"
+                      >
+                        A {{alerts.alertType}} has been detected
+                      </v-alert>
+                      <v-alert v-else 
+                        text color="#2196F3" 
+                        dismissible 
+                        @input="dismissAlert(alerts.id), getAlertCount(alerts.id), dismissedAlert = true, dismissedAlertId = alerts.id"
+                      >
+                        A {{alerts.alertType}} has been detected
+                      </v-alert>
                     </v-list-item-subtitle>
                   </v-list-item-content> 
                 </v-list-item>
@@ -58,6 +83,20 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-layout>
+    <v-snackbar
+      v-model="dismissedAlert"
+      top
+      :timeout="3000"
+    >
+      Alert with ID of {{dismissedAlertId}} has been dismissed
+      <v-btn
+        color="red"
+        text
+        @click="dismissedAlert = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
 
@@ -68,6 +107,8 @@
 export default {
   data() {
     return{
+      dismissedAlert: false,
+      dismissedAlertId: '',
       cameras: [
         {
           id: 0,
@@ -119,11 +160,6 @@ export default {
               id: 0,
               url: "https://rtsp.me/embed/HySsFh8T/",
               streamType: "HD"
-            },
-            {
-              id: 1,
-              url: "Thermal Stream",
-              streamType: "Thermal"
             }
           ]
         },
@@ -286,7 +322,8 @@ export default {
             }
           ]
         },
-      ]
+      ],
+      selected: [],
     }
   },
   methods: {
@@ -309,8 +346,17 @@ export default {
         }
       });
     },
+    getAlertCount (alert) {
+      if (this.selected.includes(alert)) {
+        // Removing the alert
+        this.selected.splice(this.selected.indexOf(alert), 1);
+      } else {
+        this.selected.push(alert);
+      }
+    },
     dismissAlert (id) {
       console.log('Alert to dismiss: ', id)
+      //this.cameras[0].alerts[id].status = 'dismissed'
     }
   },
   // watch: {
