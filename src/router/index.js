@@ -14,8 +14,8 @@ const routes = [
     component: Dashboard
   },
   {
-    path: '/projects',
-    name: 'projects',
+    path: '/profile',
+    name: 'profile',
     component: Projects
   },
   {

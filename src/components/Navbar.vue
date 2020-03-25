@@ -37,10 +37,10 @@ export default {
         return {
             drawer: false,
             links: [
-                { icon: 'mdi-view-dashboard', text: 'Dashboard', route: '/dashboard' },
-                { icon: 'mdi-folder', text: 'My Projects', route: '/projects' },
+                { icon: 'videocam', text: 'Dashboard', route: '/dashboard' },
+                { icon: 'account_circle', text: 'My Profile', route: '/profile' },
                 { icon: 'supervisor_account', text: 'Group', route: '/team' },
-                { icon: 'supervisor_account', text: 'Login', route: '/' },
+                { icon: 'input', text: 'Login', route: '/' },
             ]
         }
     }
