@@ -1,6 +1,6 @@
 <template>
   <div class="team">
-    <h1 large class="display-3 text-center pa-8" center>Group</h1>
+    <h1 large class="display-3 text-center pa-8" center>Groupers</h1>
     <div v-if="groups">
       <v-layout align-center justify-center row fill-height>
       <v-expansion-panels accordion hover multiple style="maxWidth: 800px;">
