@@ -1,6 +1,47 @@
 <template>
   <div class="team">
-    <h1 large class="display-3 text-center pa-8" center>GROUP</h1>
+    <h1 large class="display-3 text-center pa-8" center>Group</h1>
+    <v-row align="center" justify="end">
+    <v-dialog v-model="dialog" persistent max-width="600px">
+      <template v-slot:activator="{ on }">
+        <v-btn color="primary" dark v-on="on" @click="getGroups(loggedInUser)">Add New User</v-btn>
+      </template>
+      <v-card>
+        <v-card-title>
+          <span class="headline">New User</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12" sm="6" md="6">
+                <v-text-field label="First name*" id="firstName" v-model="newUser.firstName" required></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="6">
+                <v-text-field label="Last name*" id="lastName" v-model="newUser.lastName" required></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="6">
+                <v-text-field label="Email*" id="email" v-model="newUser.email" required></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="6">
+                <v-text-field label="Password*" id="password" type="password" required></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="6" md="6" v-if="selectableGroups">
+                <v-subheader v-for="group in selectableGroups" :key="group.id" @click.capture.stop="toggleGroup(group)">
+                  <v-checkbox v-model="selectedGroups" multiple :value="group" :label="group.name"></v-checkbox>
+                </v-subheader>
+              </v-col>
+            </v-row>
+          </v-container>
+          <small>*indicates required field</small>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red darken-1" text @click="dialog = false">Close</v-btn>
+          <v-btn color="blue darken-1" text @click="dialog = false, createNewUser()">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-row>
     <div v-if="groups">
       <v-layout align-center justify-center row fill-height>
       <v-expansion-panels accordion hover multiple style="maxWidth: 800px;">
@@ -16,7 +57,7 @@
               ref="form"
               v-model="valid"
               lazy-validation
-              @submit.prevent="saveChanges"
+              @submit.prevent="saveChanges(user.email, user.id), saveUser = true, saveUserName = user.firstName + ' ' + user.lastName"
             >
               <v-text-field
                 v-model="user.email"
@@ -39,31 +80,11 @@
                 color="red"
                 small
                 dark
-                absolute
-                right
                 @click="resetPassword(user.id), resetPass = true, resetPassUser = user.firstName + ' ' + user.lastName"
               >
                 Reset Password
               </v-btn>
             </v-form>
-            <!-- <v-card
-              class="mx-auto"
-              outlined
-            >
-              <v-list-item three-line>
-                <v-list-item-content>
-                  <v-list-item-title>Email: </v-list-item-title>
-                  <v-text-field
-                    v-model="user.email"
-                    placeholder= user.email
-                    id="emailField"
-                  ></v-text-field>
-                  <div class="my-2">
-                    <v-btn small color="primary" v-on:click="saveChanges($id.emailField)">Save</v-btn>
-                  </div>
-                </v-list-item-content>
-              </v-list-item>
-            </v-card> -->
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -83,19 +104,40 @@
         Close
       </v-btn>
     </v-snackbar>
+    <v-snackbar
+      v-model="saveUser"
+      top
+      :timeout="3000"
+    >
+      Email has been updated for {{saveUserName}}
+      <v-btn
+        color="red"
+        text
+        @click="saveUser = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-//import {HTTP} from '@/api/http-common';
+import {HTTP} from '@/api/http-common';
 
 export default {
   data() {
     return {
+      dialog: false,
       valid: true,
       resetPass: false,
+      saveUser: false,
+      saveUserName: '',
       resetPassUser: '',
+      loggedInUser: [],
+      selectableGroups: [],
+      selectedGroups: [],
+      newUser: {},
       emailRules: [
         v => !!v || 'E-mail is required',
         v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
@@ -150,14 +192,14 @@ export default {
     }
   },
   created() {
-        // HTTP.get(`user/${this.sampleUser.id}`)
-        // .then(response => {
-        //     this.users = response.data
-        //     console.log(this.users)
-        // })
-        // .catch(e => {
-        //     this.errors.push(e)
-        // })
+    HTTP.get(`user/1`)
+    .then(response => {
+        this.loggedInUser = response.data
+        console.log('test info', JSON.stringify(this.loggedInUser))
+    })
+    .catch(e => {
+        this.errors.push(e)
+    })
         // HTTP.get(`camera/list/1234`)
         // .then(response => {
         //     this.cameras = response.data
@@ -180,18 +222,41 @@ export default {
   mounted() {},
   methods: {
   //Set the camera type based on the status of the cameras. This 'type' is used for coloring 
-    saveChanges: function(formObj){
-      let value = formObj.target.elements[0]._value
-      console.log('save the email to be', value)
-      // let id = '' + userId
-      // let test = id + '-email'
-      // this.$nextTick(() => {
-      //   console.log('this.refs: ',this.$refs.test)
-      // });
-      // console.log('save the email to be', test)
+    saveChanges: function(email, id){
+      console.log('save the email to be', email, 'for user', id)
     },
     resetPassword: function(id){
-      console.log('reset the password for ', id)
+      console.log('reset the password for user with id of ', id)
+    },
+    getGroups: function(user){
+      console.log('get groups for admin user ', user.id)
+      this.selectableGroups = user.groups
+      console.log('this.selectable', JSON.stringify(this.selectableGroups))
+    },
+    toggleGroup: function (group) {
+      if (this.selectedGroups.includes(group)) {
+        // Removing the group
+        this.selectedGroups.splice(this.selectedGroups.indexOf(group), 1);
+      } else {
+        this.selectedGroups.push(group);
+      }
+    },
+    createNewUser: function(){
+      let newUser = this.newUser
+      newUser.groups = []
+      newUser.groups = this.selectedGroups
+      console.log('User info ', JSON.stringify(newUser))
+      HTTP.post('user/admin', {
+          newUser
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      this.newUser = {}
+      this.selectedGroups = []
     }
   }
 }
