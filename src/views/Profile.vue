@@ -1,5 +1,5 @@
 <template>
-  <div class="projects">
+  <div class="profile">
     <h1 large class="display-3 text-center pa-8" center>My Profile</h1>
     <v-card
       class="mx-auto"
