@@ -17,6 +17,7 @@
     "vue-video-player": "^5.0.2",
     "vue-videojs7": "^0.1.5",
     "vue-vjs-hls": "github:ice48623/vue-video-player",
+    "vuelidate": "^0.7.5",
     "vuetify": "^2.2.11"
   },
   "devDependencies": {
