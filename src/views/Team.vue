@@ -27,8 +27,9 @@
                     <v-text-field label="Password*" id="password" v-model="newUser.password" type="password" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="6" v-if="selectableGroups">
+                    <span class="headline">Groups*</span>
                     <v-subheader v-for="group in selectableGroups" :key="group.id" @click.capture.stop="toggleGroup(group)">
-                      <v-checkbox v-model="selectedGroups" multiple :value="group" :label="group.name"></v-checkbox>
+                      <v-checkbox v-model="selectedGroups" multiple :value="group" :label="group.name" required></v-checkbox>
                     </v-subheader>
                   </v-col>
                 </v-row>
@@ -56,7 +57,7 @@
             </v-expansion-panel-header>
             <v-expansion-panel-content class="grey--text">
               <v-form ref="form" v-model="valid" lazy-validation
-                @submit.prevent="saveChanges(user.email, user.id, user.firstName, user.lastName, user.selectedGroups, user.startingGroups), saveUser = true, saveUserName = user.firstName + ' ' + user.lastName"
+                @submit.prevent="saveChanges(user.email, user.id, user.firstName, user.lastName, user.selectedGroups), saveUser = true, saveUserName = user.firstName + ' ' + user.lastName"
               >
                 <v-row>
                   <v-col cols="12" sm="4">
@@ -74,6 +75,7 @@
                 </v-row>
                 <v-row>
                   <v-list>
+                    <span class="headline">Groups</span>
                     <v-subheader v-for="(group) in loggedInUser.groups" :key="group.id">
                       <v-checkbox v-model="user.selectedGroups" multiple :value="group" :label="group.name"></v-checkbox>
                     </v-subheader>
@@ -227,23 +229,15 @@ export default {
       if(this.loggedInUser.groups.length >= 1){
         this.loggedInUser.groups.forEach(function(group){
           HTTP.get(`user/admin/list/${group.id}`).then(response => {
-            console.log('Get users from Group', group.id, ': ', JSON.stringify(response.data))
             response.data.forEach(function(indv){
               //console.log("GROUP ID",indv.groups.name)
               if(!(users.some(user => user.id === indv.id))){
                 //Not in the array, lets add them
-                console.log(indv.firstName)
                 indv.selectedGroups = []
                 indv.startingGroups = []
                 indv.selectedGroups.push(indv.groups)
                 indv.startingGroups.push(indv.groups)
-                console.log(indv.groups)
                 users.push(indv)
-                // if(indv.selectedGroups !== undefined){
-                //   indv.selectedGroups.push(indv.groups)
-                // }
-                // //user is already in the list, don't add
-                // console.log('hello', indv.firstName)
               }
               else {
                 //You are in the array, lets add a group to you
@@ -256,15 +250,6 @@ export default {
                     
                   }
                 })
-                // console.log("indv in else: ", JSON.stringify(indv))
-                // if(indv.selectedGroups !== undefined){
-                //   console.log("Not undef! ",indv.firstName)
-                //   indv.selectedGroups.push(indv.groups)
-                // }
-                // else {
-                //   console.log("how are youhere")
-                // }
-                console.log('hello', indv.firstName)
               }
             })
           })
@@ -280,69 +265,22 @@ export default {
     getLoggedInUser: function(){
       return HTTP.get(`user/1`).then(response => {
         this.loggedInUser = response.data
-        console.log('Get logged in user: ', JSON.stringify(this.loggedInUser))
-      })
-    },
-    getUsersByGroup: function(groupID){
-      return HTTP.get(`user/admin/list/${groupID}`).then(response => {
-        console.log('Get users from Group: ', JSON.stringify(response.data))
       })
     },
   //Set the camera type based on the status of the cameras. This 'type' is used for coloring 
-    saveChanges: function(email, id, fName, lName, selectedGroups, startingGroups){
-      let groupsToUpdate = []
-      console.log('save the email to be', email, 'for user', id, fName, lName)
-      console.log("SELECTED GROUPS",JSON.stringify(selectedGroups))
-      console.log("STARTING GROUPS",JSON.stringify(startingGroups))
-      // startingGroups.forEach(function(starting){
-      //   console.log("STARTING", JSON.stringify(starting))
-      //   selectedGroups.forEach(function(selected){
-      //     if(!groupsToUpdate.includes(starting)){
-      //       console.log("SELECTED", JSON.stringify(selected))
-      //       if(selected.id === starting.id){
-      //         let newGroup = Object.assign({}, starting)
-      //         newGroup.notification = 1
-      //         console.log("MATCH", selected.name, starting.name)
-      //         groupsToUpdate.push(newGroup)
-      //       }
-      //       else {
-      //         let newGroup = Object.assign({}, starting)
-      //         newGroup.notification = 0
-      //         console.log("NO MATCH", selected.name, starting.name)
-      //         groupsToUpdate.push(newGroup)
-      //       }
-      //     }
-
-      //   })
-        
-      // })
-      startingGroups.forEach(function(group){
-        if(!groupsToUpdate.includes(group)){
-          if(!selectedGroups.includes(group)){
-            let newGroup = Object.assign({}, group)
-            newGroup.notification = 0
-            groupsToUpdate.push(newGroup)
-          }
-          else{
-            let newGroup = Object.assign({}, group)
-            newGroup.notification = 1
-            groupsToUpdate.push(newGroup)
-          }
-        }
-        else {
-            let newGroup = Object.assign({}, group)
-            newGroup.notification = 1
-            groupsToUpdate.push(newGroup)
-        }
-      })
-      
-      console.log("GROUPS TO UPDATE",JSON.stringify(groupsToUpdate))
+    saveChanges: function(email, id, fName, lName, selectedGroups){
+      if(selectedGroups.length >= 1){
+        selectedGroups.forEach(function(group){
+          group.notification = 1
+        })
+      }
+      console.log("NEW SELECTED GROUPS",JSON.stringify(selectedGroups))
       HTTP.put('/user/admin', {
         "id": id,
         "firstName": fName,
         "lastName": lName,
         "email": email,
-        "groups": groupsToUpdate
+        "groups": selectedGroups
       }).catch(function (error) {
         console.log(error);
       });
@@ -351,17 +289,16 @@ export default {
       console.log('reset the password for user with id of ', id)
     },
     deleteUser: function(id){
-      console.log('user to delete has ID of: ', id)
       HTTP.delete('/user/admin', {
         params: {
           userId:id
         }
-      })
+      }).catch(function (error) {
+        console.log(error);
+      });
     },
     getGroups: function(user){
-      console.log('get groups for admin user ', user.id)
       this.selectableGroups = user.groups
-      console.log('this.selectable', JSON.stringify(this.selectableGroups))
     },
     toggleGroup: function (group) {
       if (this.selectedGroups.includes(group)) {
@@ -372,10 +309,15 @@ export default {
       }
     },
     createNewUser: function(){
+      if(this.newUser.firstName == null || this.newUser.lastName == null || this.newUser.email == null
+        || this.newUser.groups == null || this.newUser.password == null){
+          console.log("ERROR")
+          return;
+        }
+
       let newUser = this.newUser
       newUser.groups = []
       newUser.groups = this.selectedGroups
-      console.log('User info ', JSON.stringify(newUser))
       HTTP.post('user/admin', {
         "firstName": newUser.firstName,
         "lastName": newUser.lastName,
