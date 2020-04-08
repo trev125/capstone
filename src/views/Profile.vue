@@ -8,30 +8,36 @@
       <v-card-text>
         <div>Welcome</div>
         <p class="headline text--primary">
-          {{user[0].firstName}} {{user[0].lastName}}
+          {{loggedInUser.firstName}} {{loggedInUser.lastName}}
         </p>
         <v-form
           ref="form"
           v-model="valid"
           lazy-validation
-          @submit.prevent="saveChanges"
+          @submit.prevent="saveChanges()"
         >
-          <v-text-field
-            v-model="user[0].email"
-            :rules="emailRules"
-            label="Email"
-            required
-            :id="`${user[0].id}-email`"
-          ></v-text-field>
+          <v-row>
+            <v-col cols="12" sm="4">
+              <v-text-field v-model="loggedInUser.email" :rules="emailRules" label="Email" required :id="`${loggedInUser.id}-email`"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="4">
+              <v-text-field  v-model="loggedInUser.firstName" label="First Name" required :id="`${loggedInUser.id}-fName`"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="4">
+              <v-text-field v-model="loggedInUser.lastName" label="Last Name" required :id="`${loggedInUser.id}-lName`"
+              ></v-text-field>
+            </v-col>
+          </v-row>
           <p class="headline text--primary">
             Notifications
           </p>
           <v-list>
-            <v-subheader v-for="(group) in user[0].groups" :key="group.id" @click.capture.stop="toggleGroup(group)">
+            <v-subheader v-for="(group) in loggedInUser.groups" :key="group.id" @click.capture.stop="toggleGroup(group)">
                 <v-checkbox v-model="selected" multiple :value="group" :label="group.name"></v-checkbox>
             </v-subheader>
           </v-list>
-          <pre>{{ selected }}</pre>
           <v-btn
             type="submit"
             :disabled="!valid"
@@ -64,6 +70,7 @@
 
 <script>
 // @ is an alias to /src
+import {HTTP} from '@/api/http-common';
 
 export default {
   data() {
@@ -89,6 +96,7 @@ export default {
           ]
         }
       ],
+      loggedInUser: [],
       valid: true,
       selected: [],
       emailRules: [
@@ -97,12 +105,50 @@ export default {
       ],
     }
   },
+  created () {
+    this.getLoggedInUser()
+  },
   methods: {
-    saveChanges: function(formObj){
-      this.selected.forEach(element => console.log(element.id));
+    getLoggedInUser: function(){
+      return HTTP.get(`user/20`).then(response => {
+        this.loggedInUser = response.data
+        let selectedFromStart = []
+        if(this.loggedInUser.groups.length > 0){
+          this.loggedInUser.groups.forEach(function(group){
+            if(group.notification === 1){
+              selectedFromStart.push(group)
+            }
+          })
+        }
+        this.selected = selectedFromStart
+        console.log('Get logged in user: ', JSON.stringify(this.loggedInUser))
+      })
+    },
+    saveChanges: function(){
+      this.selected.forEach(location => console.log(location.id));
       //console.log(this.selected)
-      let value = formObj.target.elements[0]._value
-      console.log('save the email to be', value)
+      //let value = this.loggedInUser.email
+      console.log('save the email to be', JSON.stringify(this.loggedInUser))
+      console.log(JSON.stringify(this.selected))
+      let selected = this.selected
+      this.loggedInUser.groups.forEach(function(startingGroup){
+        if(!selected.includes(startingGroup)){
+          startingGroup.notification = 0
+        }
+        else{
+          startingGroup.notification = 1
+        }
+      })
+      console.log("Hello?",JSON.stringify(this.loggedInUser))
+      HTTP.put('/user/1', {
+        "id": this.loggedInUser.id,
+        "email": this.loggedInUser.email,
+        "firstName": this.loggedInUser.firstName,
+        "lastName": this.loggedInUser.lastName,
+        "groups": this.loggedInUser.groups
+      }).catch(function (error) {
+        console.log(error);
+      });
     },
     toggleGroup (group) {
       if (this.selected.includes(group)) {
